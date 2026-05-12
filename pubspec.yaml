@@ -1,0 +1,49 @@
+name: test_app
+description: A SpaceX launch tracker app with Flutter
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.7
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase
+
+
+  # State Management
+  provider: ^6.1.2
+
+  # HTTP & API
+  http: ^1.2.0
+  dio: ^5.4.1
+
+  # Local Storage & Caching
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.4
+
+  # UI
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.3.2
+  cached_network_image: ^3.3.1
+  flutter_svg: ^2.2.2
+
+  # Utils
+  intl: ^0.19.0
+  shared_preferences: ^2.5.3
+  url_launcher: ^6.3.0
+  firebase_core: ^4.4.0        # keep
+  firebase_auth: ^6.1.4         # keep  
+  cloud_firestore: ^6.1.2 
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

@@ -1,0 +1,529 @@
+import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:spacex_go/data/models/rocket_model.dart';
+import '../../../core/utils/helpers.dart';
+
+class RocketDetailScreen extends StatelessWidget {
+  final RocketModel rocket;
+
+  const RocketDetailScreen({super.key, required this.rocket});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 300,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(
+                rocket.name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  shadows: [
+                    Shadow(
+                      offset: Offset(0, 1),
+                      blurRadius: 3,
+                      color: Colors.black45,
+                    ),
+                  ],
+                ),
+              ),
+              background: rocket.flickrImages != null && rocket.flickrImages!.isNotEmpty
+                  ? Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        CachedNetworkImage(
+                          imageUrl: rocket.flickrImages!.first,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: Colors.grey[900],
+                            child: const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: Colors.grey[900],
+                            child: const Icon(Icons.rocket, size: 100),
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.7),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Container(
+                      color: Theme.of(context).primaryColor,
+                      child: const Icon(Icons.rocket, size: 100, color: Colors.white),
+                    ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Status Badge
+                  if (rocket.active != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: rocket.active! ? Colors.green : Colors.grey,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        rocket.active! ? '🚀 Active' : '⏸️ Inactive',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 16),
+
+                  // Description
+                  if (rocket.description != null) ...[
+                    Text(
+                      'About',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      rocket.description!,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Specifications
+                  Text(
+                    'Specifications',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Stats Grid
+                  _buildStatsGrid(context),
+                  const SizedBox(height: 24),
+
+                  // Dimensions
+                  if (rocket.height != null || rocket.diameter != null || rocket.mass != null) ...[
+                    Text(
+                      'Dimensions',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildDimensionsCard(context),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Additional Info
+                  Text(
+                    'Additional Information',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildInfoCard(context),
+                  const SizedBox(height: 24),
+
+                  // Image Gallery
+                  if (rocket.flickrImages != null && rocket.flickrImages!.length > 1) ...[
+                    Text(
+                      'Gallery',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildImageGallery(context),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsGrid(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatItem(
+                    context,
+                    '🎯 Success Rate',
+                    '${rocket.successRatePct?.toStringAsFixed(0) ?? 'N/A'}%',
+                  ),
+                ),
+                Expanded(
+                  child: _buildStatItem(
+                    context,
+                    '🏗️ Stages',
+                    '${rocket.stages ?? 'N/A'}',
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 32),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatItem(
+                    context,
+                    '🚀 Boosters',
+                    '${rocket.boosters ?? 'N/A'}',
+                  ),
+                ),
+                Expanded(
+                  child: _buildStatItem(
+                    context,
+                    '💰 Cost per Launch',
+                    rocket.costPerLaunch != null
+                        ? Helpers.formatCurrency(rocket.costPerLaunch!)
+                        : 'N/A',
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatItem(BuildContext context, String label, String value) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).primaryColor,
+              ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDimensionsCard(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            if (rocket.height != null)
+              _buildInfoRow(
+                context,
+                '📏 Height',
+                '${rocket.height!.meters?.toStringAsFixed(1) ?? 'N/A'} m (${rocket.height!.feet?.toStringAsFixed(1) ?? 'N/A'} ft)',
+              ),
+            if (rocket.diameter != null) ...[
+              const Divider(),
+              _buildInfoRow(
+                context,
+                '⭕ Diameter',
+                '${rocket.diameter!.meters?.toStringAsFixed(1) ?? 'N/A'} m (${rocket.diameter!.feet?.toStringAsFixed(1) ?? 'N/A'} ft)',
+              ),
+            ],
+            if (rocket.mass != null) ...[
+              const Divider(),
+              _buildInfoRow(
+                context,
+                '⚖️ Mass',
+                '${Helpers.formatNumber(rocket.mass!.kg ?? 0)} kg (${Helpers.formatNumber(rocket.mass!.lb ?? 0)} lb)',
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            if (rocket.country != null)
+              _buildInfoRow(context, '🌍 Country', rocket.country!),
+            if (rocket.company != null) ...[
+              const Divider(),
+              _buildInfoRow(context, '🏢 Company', rocket.company!),
+            ],
+            if (rocket.firstFlight != null) ...[
+              const Divider(),
+              _buildInfoRow(context, '🗓️ First Flight', rocket.firstFlight!),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImageGallery(BuildContext context) {
+    return SizedBox(
+      height: 150,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: rocket.flickrImages!.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: CachedNetworkImage(
+                imageUrl: rocket.flickrImages![index],
+                width: 200,
+                height: 150,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  width: 200,
+                  color: Colors.grey[300],
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  width: 200,
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.error),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../../data/models/rocket_model.dart';
+
+class RocketDetailScreen extends StatelessWidget {
+  final RocketModel rocket;
+
+  const RocketDetailScreen({super.key, required this.rocket});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(rocket.name),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (rocket.flickrImages != null && rocket.flickrImages!.isNotEmpty)
+              SizedBox(
+                height: 300,
+                child: PageView.builder(
+                  itemCount: rocket.flickrImages!.length,
+                  itemBuilder: (context, index) {
+                    return CachedNetworkImage(
+                      imageUrl: rocket.flickrImages![index],
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        color: Theme.of(context).colorScheme.surfaceVariant,
+                        child: const Center(child: CircularProgressIndicator()),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: Theme.of(context).colorScheme.surfaceVariant,
+                        child: const Icon(Icons.rocket_launch, size: 64),
+                      ),
+                    );
+                  },
+                ),
+              )
+            else
+              Container(
+                height: 300,
+                color: Theme.of(context).colorScheme.surfaceVariant,
+                child: const Center(
+                  child: Icon(Icons.rocket_launch, size: 100),
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    rocket.name,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  if (rocket.company != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      rocket.company!,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  _buildSpecsSection(context),
+                  const SizedBox(height: 24),
+                  if (rocket.description != null) ...[
+                    Text(
+                      'Description',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      rocket.description!,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSpecsSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Specifications',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        const SizedBox(height: 16),
+        _buildSpecRow(
+          context,
+          'Status',
+          rocket.active == true ? 'Active' : rocket.active == false ? 'Retired' : 'Unknown',
+        ),
+        if (rocket.country != null)
+          _buildSpecRow(context, 'Country', rocket.country!),
+        if (rocket.firstFlight != null)
+          _buildSpecRow(context, 'First Flight', rocket.firstFlight!),
+        if (rocket.stages != null)
+          _buildSpecRow(context, 'Stages', rocket.stages.toString()),
+        if (rocket.height?.meters != null)
+          _buildSpecRow(
+            context,
+            'Height',
+            '${rocket.height!.meters!.toStringAsFixed(1)} m (${rocket.height!.feet?.toStringAsFixed(1) ?? "N/A"} ft)',
+          ),
+        if (rocket.diameter?.meters != null)
+          _buildSpecRow(
+            context,
+            'Diameter',
+            '${rocket.diameter!.meters!.toStringAsFixed(1)} m (${rocket.diameter!.feet?.toStringAsFixed(1) ?? "N/A"} ft)',
+          ),
+        if (rocket.mass?.kg != null)
+          _buildSpecRow(
+            context,
+            'Mass',
+            '${(rocket.mass!.kg! / 1000).toStringAsFixed(1)} tonnes (${rocket.mass!.lb != null ? (rocket.mass!.lb! / 2204.62).toStringAsFixed(1) : "N/A"} tons)',
+          ),
+        if (rocket.costPerLaunch != null)
+          _buildSpecRow(
+            context,
+            'Cost per Launch',
+            '\$${(rocket.costPerLaunch! / 1000000).toStringAsFixed(1)}M',
+          ),
+        if (rocket.successRatePct != null)
+          _buildSpecRow(
+            context,
+            'Success Rate',
+            '${rocket.successRatePct!.toStringAsFixed(1)}%',
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSpecRow(BuildContext context, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 140,
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -1,0 +1,60 @@
+# Misc
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ / Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code
+.vscode/
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+
+# Generated files
+.generated/
+*.g.dart
+
+# Flutter docs
+doc/api/
+
+# iOS
+ios/Flutter/.last_build_id
+
+# Android build outputs
+android/app/debug
+android/app/profile
+android/app/release
+
+# Firebase
+google-services.json
+GoogleService-Info.plist
+firebase.json
+
+# Environment files
+.env
+.env.*
+
+# OS files
+Thumbs.db
+Desktop.ini
